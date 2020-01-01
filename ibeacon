@@ -57,6 +57,11 @@ def endian_swap(hex):
   newhex = hexbyte2 + hexbyte1
   return newhex
 
+# reverse order of a split hex list
+def endianer(split_hex):
+  reversed_hex = split_hex.split(" ")[::-1]
+  return (" ".join(reversed_hex))
+
 # split a hex string into 8-bit/2-hex-character groupings separated by spaces
 def hexsplit(string):
   return ' '.join([string[i:i+2] for i in range(0, len(string), 2)])
@@ -72,7 +77,7 @@ def process_command(c):
 
 # check to see if we are the superuser - returns 1 if yes, 0 if no
 def check_for_sudo():
-  if 'SUDO_UID' in os.environ.keys():
+  if 'SUDO_UID' in os.environ.keys() or os.geteuid() == 0:
     return 1
   else:
     print "Error: this script requires superuser privileges.  Please re-run with `sudo.'"
@@ -197,6 +202,12 @@ def main(argv=None):
 
     # convert power into hex
     power_hex = hexify(power, 2)
+
+    # fix byte order for big endian systems
+    if sys.byteorder == "big":
+      split_uuid = endianer(split_uuid)
+      split_major_hex = endianer(split_major_hex)
+      split_minor_hex = endianer(split_minor_hex)
 
     # make sure we are using a valid hci device
     if not simulate and not is_valid_device(device):
